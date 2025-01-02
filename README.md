@@ -13,6 +13,7 @@ Fixes:
 - Fixed building upkeep charges so they subtract money from the renter instead of adding it.
 - Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.
+- Fixed amount of service subtracted from leisure companies.
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 

@@ -77,7 +77,7 @@ public partial class ModifiedLeisureSystem : GameSystemBase
 				}
 				bool flag = false;
 				float num = EconomyUtils.GetMarketPrice(resource, m_ResourcePrefabs, ref m_ResourceDatas);
-				float amount = kLeisureConsumeAmount;
+				int amount = kLeisureConsumeAmount;
 				// some bug here
 				// some bug wuth export to outside connection
 				if (m_ServiceAvailables.HasComponent(item.m_Provider) && m_ServiceCompanyDatas.HasComponent(prefab))
@@ -85,7 +85,7 @@ public partial class ModifiedLeisureSystem : GameSystemBase
 					ServiceAvailable value = m_ServiceAvailables[item.m_Provider];
 					ServiceCompanyData serviceCompanyData = m_ServiceCompanyDatas[prefab];
 				    // num *= (float)serviceCompanyData.m_ServiceConsuming;
-					amount *= (float)serviceCompanyData.m_ServiceConsuming;
+					amount *= serviceCompanyData.m_ServiceConsuming;
 					//	BetterEconomy.log.Info($"[positive]leisure service cons {serviceCompanyData.m_ServiceConsuming}, available {value.m_ServiceAvailable}");
 					
 					if (value.m_ServiceAvailable > 0)
@@ -107,7 +107,8 @@ public partial class ModifiedLeisureSystem : GameSystemBase
 					if (EconomyUtils.GetResources(resource, resources) > amount)
 					{
 						DynamicBuffer<Game.Economy.Resources> resources2 = m_Resources[household];
-						EconomyUtils.AddResources(resource, -Mathf.RoundToInt(amount), resources);
+						// bug 5
+						EconomyUtils.AddResources(resource, -amount, resources);
 						num *= (float)amount;
 						// BetterEconomy.log.Info($"[nagative]leisure total {-num}, amount {amount}, market {EconomyUtils.GetMarketPrice(resource, m_ResourcePrefabs, ref m_ResourceDatas)} for {household.Index}");
 					
