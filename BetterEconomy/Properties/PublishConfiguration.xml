@@ -47,4 +47,6 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/nucleartux/CS2BetterEconomy" />
+	<ExternalLink Type="patreon" Url="https://patreon.com/adrov" />
+	<ExternalLink Type="paypal" Url="https://paypal.me/iadrov" />
 </Publish>
