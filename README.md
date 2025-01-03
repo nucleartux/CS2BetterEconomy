@@ -18,4 +18,7 @@ Fixes:
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 
+Known mods compatibility:
+- Plop the Growables overrides some fixes; additionally, the building level lock doesn't work.
+
 The mod works with old cities, but there’s a high chance that your city is already economically broken due to bugs. The city’s economy will stabilize, but it may take several hours of real time at 3x speed.
