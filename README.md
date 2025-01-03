@@ -14,6 +14,7 @@ Fixes:
 - Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.
 - Fixed amount of service subtracted from leisure companies.
+- Fixed a bug where resource export companies were paid twice.
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 
