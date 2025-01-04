@@ -1,37 +1,36 @@
-using Game;
+using System;
 using System.Runtime.CompilerServices;
+using Colossal.Collections;
+using Colossal.Entities;
+using Colossal.Mathematics;
+using Game;
 using Game.Buildings;
+using Game.Citizens;
+using Game.City;
 using Game.Common;
 using Game.Economy;
+using Game.Net;
 using Game.Notifications;
+using Game.Objects;
 using Game.Prefabs;
+using Game.Simulation;
 using Game.Tools;
+using Game.Triggers;
 using Game.Vehicles;
+using Game.Zones;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine.Scripting;
-using Game.Simulation;
-using System;
-using Colossal.Collections;
-using Colossal.Entities;
-using Game.Citizens;
-using Game.City;
-using Game.Net;
-using Game.Objects;
-using Game.Triggers;
-using Game.Zones;
 using UnityEngine;
-using Colossal.Mathematics;
+using UnityEngine.Scripting;
 
-namespace BetterEconomy.Systems
-{
-    public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
-{
+namespace BetterEconomy.Systems;
 
+public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
+{
 	private struct UpkeepPayment
 	{
 		public Entity m_RenterEntity;
@@ -132,7 +131,6 @@ namespace BetterEconomy.Systems
 
 		public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-       
 		public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
 		{
 			if (chunk.GetSharedComponent(m_UpdateFrameType).m_Index != m_UpdateFrameIndex)
@@ -146,7 +144,7 @@ namespace BetterEconomy.Systems
 			BufferAccessor<Renter> bufferAccessor = chunk.GetBufferAccessor(ref m_RenterType);
 			for (int i = 0; i < chunk.Count; i++)
 			{
-				int totalUpkeepCost  = 0;
+				int num = 0;
 				Entity target = nativeArray[i];
 				Entity prefab = nativeArray2[i].m_Prefab;
 				ConsumptionData consumptionData = m_ConsumptionDatas[prefab];
@@ -157,15 +155,15 @@ namespace BetterEconomy.Systems
 				AreaType areaType = m_ZoneDatas[spawnableBuildingData.m_ZonePrefab].m_AreaType;
 				BuildingPropertyData propertyData = m_BuildingPropertyDatas[prefab];
 				int levelingCost = BuildingUtils.GetLevelingCost(areaType, propertyData, spawnableBuildingData.m_Level, cityEffects);
-				int levelDownThreshold  = ((spawnableBuildingData.m_Level == 5) ? BuildingUtils.GetLevelingCost(areaType, propertyData, 4, cityEffects) : levelingCost);
+				int num2 = ((spawnableBuildingData.m_Level == 5) ? BuildingUtils.GetLevelingCost(areaType, propertyData, 4, cityEffects) : levelingCost);
 				if (areaType == AreaType.Residential && propertyData.m_ResidentialProperties > 1)
 				{
-					levelDownThreshold  = Mathf.RoundToInt((float)(levelDownThreshold  * (6 - spawnableBuildingData.m_Level)) / math.sqrt(propertyData.m_ResidentialProperties));
+					num2 = Mathf.RoundToInt((float)(num2 * (6 - spawnableBuildingData.m_Level)) / math.sqrt(propertyData.m_ResidentialProperties));
 				}
-				DynamicBuffer<Renter> renters = bufferAccessor[i];
+				DynamicBuffer<Renter> dynamicBuffer = bufferAccessor[i];
 				int num3 = consumptionData.m_Upkeep / kUpdatesPerDay;
 				int num4 = num3 / kMaterialUpkeep;
-				totalUpkeepCost  += num3 - num4;
+				num += num3 - num4;
 				Unity.Mathematics.Random random = new Unity.Mathematics.Random((uint)(1 + target.Index * m_SimulationFrame));
 				Resource resource = (Resource)(random.NextBool() ? 128 : 268435456);
 				float marketPrice = EconomyUtils.GetMarketPrice(m_ResourceDatas[m_ResourcePrefabs[resource]]);
@@ -208,90 +206,53 @@ namespace BetterEconomy.Systems
 							m_Resource = resource,
 							m_Target = target
 						});
-						totalUpkeepCost  += num7;
+						num += num7;
 					}
 				}
-				// int num8 = 0;
-				// for (int j = 0; j < renters.Length; j++)
-				// {
-				// 	if (m_Resources.TryGetBuffer(renters[j].m_Renter, out var bufferData))
-				// 	{
-				// 		num8 = ((!m_Households.HasComponent(renters[j].m_Renter)) ? ((!m_OwnedVehicles.HasBuffer(renters[j].m_Renter)) ? (num8 + EconomyUtils.GetCompanyTotalWorth(bufferData, m_ResourcePrefabs, m_ResourceDatas)) : (num8 + EconomyUtils.GetCompanyTotalWorth(bufferData, m_OwnedVehicles[renters[j].m_Renter], m_LayoutElements, m_DeliveryTrucks, m_ResourcePrefabs, m_ResourceDatas))) : (num8 + EconomyUtils.GetResources(Resource.Money, bufferData)));
-				// 	}
-				// }
-
-// bug 1
-                int totalRenterMoney = 0;
-for (int j = 0; j < renters.Length; j++)
-{
-    if (m_Resources.TryGetBuffer(renters[j].m_Renter, out var bufferData))
-    {
-        // Only check the actual money amount, not total worth
-        totalRenterMoney += EconomyUtils.GetResources(Resource.Money, bufferData);
-    }
-}
-
-
+				int num8 = 0;
+				for (int j = 0; j < dynamicBuffer.Length; j++)
+				{
+					if (m_Resources.TryGetBuffer(dynamicBuffer[j].m_Renter, out var bufferData))
+					{
+						num8 = ((!m_Households.HasComponent(dynamicBuffer[j].m_Renter)) ? ((!m_OwnedVehicles.HasBuffer(dynamicBuffer[j].m_Renter)) ? (num8 + EconomyUtils.GetCompanyTotalWorth(bufferData, m_ResourcePrefabs, m_ResourceDatas)) : (num8 + EconomyUtils.GetCompanyTotalWorth(bufferData, m_OwnedVehicles[dynamicBuffer[j].m_Renter], m_LayoutElements, m_DeliveryTrucks, m_ResourcePrefabs, m_ResourceDatas))) : (num8 + EconomyUtils.GetResources(Resource.Money, bufferData)));
+					}
+				}
 				BuildingCondition value = nativeArray3[i];
-				int conditionChange  = 0;
-
-                if (totalUpkeepCost > totalRenterMoney)
-{
-    conditionChange = -math.max(1, m_BuildingConfigurationData.m_BuildingConditionDecrement) * 
-        (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * 
-        math.max(1, renters.Length);
-}
-else if (renters.Length > 0)
-{
-    conditionChange = m_BuildingConfigurationData.m_BuildingConditionIncrement * 
-        (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * 
-        math.max(1, renters.Length);
-    int price = totalUpkeepCost / renters.Length;
-    for (int k = 0; k < renters.Length; k++)
-    {
-        m_UpkeepExpenseQueue.Enqueue(new UpkeepPayment
-        {
-            m_RenterEntity = renters[k].m_Renter,
-            m_Price = price
-        });
-    }
-}
-
-				// if (num > num8)
-				// {
-				// 	conditionChange  = -m_BuildingConfigurationData.m_BuildingConditionDecrement * (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * math.max(1, renters.Length);
-				// }
-				// else if (renters.Length > 0)
-				// {
-				// 	conditionChange  = m_BuildingConfigurationData.m_BuildingConditionIncrement * (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * math.max(1, renters.Length);
-				// 	int price = num / renters.Length;
-				// 	for (int k = 0; k < renters.Length; k++)
-				// 	{
-				// 		m_UpkeepExpenseQueue.Enqueue(new UpkeepPayment
-				// 		{
-				// 			m_RenterEntity = renters[k].m_Renter,
-				// 			m_Price = price
-				// 		});
-				// 	}
-				// }
-				//if(buildingPropertyData.CountProperties(AreaType.Commercial) > 0)
-               // 	BetterEconomy.log.Info($"fdfd cond {value.m_Condition} price {levelDownThreshold}, change {conditionChange}, decrement {m_BuildingConfigurationData.m_BuildingConditionDecrement}, decr total {m_BuildingConfigurationData.m_BuildingConditionDecrement * 
-     //   (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * 
-  //      math.max(1, renters.Length)}");
+				int num9 = 0;
+				//BetterEconomy.log.Info($"total wealth {num8}, money {money}, upkeep cost {num}, id:{target.Index}");
+				if (num > num8)
+				{
+					// bug 1
+					num9 = -math.max(1, m_BuildingConfigurationData.m_BuildingConditionDecrement * (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * math.max(1, dynamicBuffer.Length));
+				}
+				else if (dynamicBuffer.Length > 0)
+				{
+					num9 = m_BuildingConfigurationData.m_BuildingConditionIncrement * (int)math.pow(2f, (int)spawnableBuildingData.m_Level) * math.max(1, dynamicBuffer.Length);
+					int price = num / dynamicBuffer.Length;
+					//		BetterEconomy.log.Info($"upkeep payment {price}, id:{target.Index}");
+					for (int k = 0; k < dynamicBuffer.Length; k++)
+					{
+						m_UpkeepExpenseQueue.Enqueue(new UpkeepPayment
+						{
+							m_RenterEntity = dynamicBuffer[k].m_Renter,
+							m_Price = price
+						});
+					}
+				}
 				if (m_DebugFastLeveling)
 				{
 					value.m_Condition = levelingCost;
 				}
 				else
 				{
-					value.m_Condition += conditionChange ;
+					value.m_Condition += num9;
 				}
 				if (value.m_Condition >= levelingCost)
 				{
 					m_LevelupQueue.Enqueue(nativeArray[i]);
 					value.m_Condition -= levelingCost;
 				}
-				if (!m_Abandoned.HasComponent(nativeArray[i]) && !m_Destroyed.HasComponent(nativeArray[i]) && nativeArray3[i].m_Condition <= -levelDownThreshold  && !m_SignatureDatas.HasComponent(prefab))
+				if (!m_Abandoned.HasComponent(nativeArray[i]) && !m_Destroyed.HasComponent(nativeArray[i]) && nativeArray3[i].m_Condition <= -num2 && !m_SignatureDatas.HasComponent(prefab))
 				{
 					m_LevelDownQueue.Enqueue(nativeArray[i]);
 					value.m_Condition += levelingCost;
@@ -320,7 +281,6 @@ else if (renters.Length > 0)
 			{
 				if (m_Resources.HasBuffer(item.m_RenterEntity))
 				{
-						// BetterEconomy.log.Info($"[negative] expense upkeep {-item.m_Price} for {item.m_RenterEntity.Index}");
 					// bug 2
 					EconomyUtils.AddResources(Resource.Money, -item.m_Price, m_Resources[item.m_RenterEntity]);
 				}
@@ -440,11 +400,11 @@ else if (renters.Length > 0)
 				}
 				if (m_Renters.HasBuffer(item))
 				{
-					DynamicBuffer<Renter> renters = m_Renters[item];
-					for (int num = renters.Length - 1; num >= 0; num--)
+					DynamicBuffer<Renter> dynamicBuffer = m_Renters[item];
+					for (int num = dynamicBuffer.Length - 1; num >= 0; num--)
 					{
-						m_CommandBuffer.RemoveComponent<PropertyRenter>(renters[num].m_Renter);
-						renters.RemoveAt(num);
+						m_CommandBuffer.RemoveComponent<PropertyRenter>(dynamicBuffer[num].m_Renter);
+						dynamicBuffer.RemoveAt(num);
 					}
 				}
 				if ((m_Buildings[item].m_Flags & Game.Buildings.BuildingFlags.HighRentWarning) != 0)
@@ -516,7 +476,7 @@ else if (renters.Length > 0)
 					return;
 				}
 				Block block = m_BlockData[blockEntity];
-				DynamicBuffer<Cell> renters = m_Cells[blockEntity];
+				DynamicBuffer<Cell> dynamicBuffer = m_Cells[blockEntity];
 				float2 startPosition = m_StartPosition;
 				int2 @int = default(int2);
 				@int.y = 0;
@@ -530,7 +490,7 @@ else if (renters.Length > 0)
 						if (math.all((cellIndex >= validArea.m_Area.xz) & (cellIndex < validArea.m_Area.yw)))
 						{
 							int index = cellIndex.y * block.m_Size.x + cellIndex.x;
-							Cell cell = renters[index];
+							Cell cell = dynamicBuffer[index];
 							if ((cell.m_State & CellFlags.Visible) != 0)
 							{
 								m_MaxHeight = math.min(m_MaxHeight, cell.m_Height);
@@ -695,9 +655,9 @@ else if (renters.Length > 0)
 					ObjectGeometryData objectGeometryData = nativeArray5[j];
 					if (level == spawnableBuildingData.m_Level && lotSize.Equals(buildingData.m_LotSize) && objectGeometryData.m_Size.y <= maxHeight && (buildingData.m_Flags & (Game.Prefabs.BuildingFlags.LeftAccess | Game.Prefabs.BuildingFlags.RightAccess)) == accessFlags && buildingPropertyData.m_ResidentialProperties <= buildingPropertyData2.m_ResidentialProperties && buildingPropertyData.m_AllowedManufactured == buildingPropertyData2.m_AllowedManufactured && buildingPropertyData.m_AllowedSold == buildingPropertyData2.m_AllowedSold && buildingPropertyData.m_AllowedStored == buildingPropertyData2.m_AllowedStored)
 					{
-						int levelDownThreshold  = 100;
-						num += levelDownThreshold ;
-						if (random.NextInt(num) < levelDownThreshold )
+						int num2 = 100;
+						num += num2;
+						if (random.NextInt(num) < num2)
 						{
 							result = nativeArray[j];
 						}
@@ -1214,6 +1174,4 @@ else if (renters.Length > 0)
 	public ModifiedBuildingUpkeepSystem()
 	{
 	}
-}
-
 }

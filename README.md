@@ -1,4 +1,4 @@
-# Better Economy
+# Economy Fixes (former Better Economy)
 
 The goal of the mod is to fix bugs in the original game while minimizing deviation from the original gameplay mechanics.
 This mod doesn’t make the game harder or easier; it makes your actions more meaningful.
@@ -9,7 +9,7 @@ Ultimately, it’s not just a mod but a patch with many changes that should have
 
 Fixes:
 - Fixed a bug where companies would randomly leave the city.
-- Companies now rely solely on their funds to level up buildings (previously, they could level up even if heavily in debt).
+- Fixed the deterioration of the buildings' condition.
 - Fixed building upkeep charges so they subtract money from the renter instead of adding it.
 - Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.

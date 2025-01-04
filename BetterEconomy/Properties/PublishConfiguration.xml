@@ -2,7 +2,7 @@
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
 	<ModId Value="98476" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Better Economy" />
+	<DisplayName Value="Economy Fixes (1.2.*)" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Fixes all problems with the economy" />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
@@ -17,7 +17,7 @@ Ultimately, it’s not just a mod but a patch with many changes that should have
 
 Fixes:
 - Fixed a bug where companies would randomly leave the city.
-- Companies now rely solely on their funds to level up buildings (previously, they could level up even if heavily in debt).
+- Fixed the deterioration of the buildings' condition.
 - Fixed building upkeep charges so they subtract money from the renter instead of adding it.
 - Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.
@@ -41,13 +41,13 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.2.0" />
+	<ModVersion Value="1.3.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-**v1.2.0**
-- Fixed a bug where resource export companies were paid twice
+**v1.3.0**
+- Reverted building leveling mechanic
 
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
