@@ -185,7 +185,10 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 					buildingEfficiency = GetBuildingEfficiency(bufferData);
 				}
 				int companyProductionPerDay = EconomyUtils.GetCompanyProductionPerDay(buildingEfficiency, !flag, bufferAccessor2[i], industrialProcessData, m_ResourcePrefabs, m_ResourceDatas, m_Citizens, ref m_EconomyParameters);
-				int num = MathUtils.RoundToIntRandom(ref random, 1f * (float)companyProductionPerDay / (float)EconomyUtils.kCompanyUpdatesPerDay);
+				// bug 7
+				float num =  (float)companyProductionPerDay / (float)EconomyUtils.kCompanyUpdatesPerDay;
+				int numInt = MathUtils.RoundToIntRandom(ref random, 1f * num);
+
 				ResourceStack input = industrialProcessData.m_Input1;
 				ResourceStack input2 = industrialProcessData.m_Input2;
 				ResourceStack output = industrialProcessData.m_Output;
@@ -197,13 +200,13 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 				{
 					int resources2 = EconomyUtils.GetResources(input.m_Resource, resources);
 					num2 = (float)input.m_Amount * 1f / (float)output.m_Amount;
-					num = math.min(num, (int)((float)resources2 / num2));
+					num = math.min(num, ((float)resources2 / num2));
 				}
 				if (input2.m_Resource != Resource.NoResource && (float)input2.m_Amount > 0f)
 				{
 					int resources3 = EconomyUtils.GetResources(input2.m_Resource, resources);
 					num3 = (float)input2.m_Amount * 1f / (float)output.m_Amount;
-					num = math.min(num, (int)((float)resources3 / num3));
+					num = math.min(num, ((float)resources3 / num3));
 				}
 				float num6 = (flag ? EconomyUtils.GetMarketPrice(output.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) : EconomyUtils.GetIndustrialPrice(output.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas)) - (float)input.m_Amount * EconomyUtils.GetIndustrialPrice(input.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) / (float)output.m_Amount - (float)input2.m_Amount * EconomyUtils.GetIndustrialPrice(input2.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) / (float)output.m_Amount;
 				int resources4;
@@ -236,8 +239,8 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 						resources4 = EconomyUtils.GetResources(output.m_Resource, resources);
 						num = math.clamp(IndustrialAISystem.kMaxVirtualResourceStorage - resources4, 0, num);
 					}
-					resources4 = EconomyUtils.AddResources(output.m_Resource, num, resources);
-					AddProducedResource(output.m_Resource, num);
+					resources4 = EconomyUtils.AddResources(output.m_Resource, numInt, resources);
+					AddProducedResource(output.m_Resource, numInt);
 					if (!flag && reference.m_RandomSeed.NextInt(400000) < num)
 					{
 						Resource randomUpkeepResource = GetRandomUpkeepResource(reference, output.m_Resource);
@@ -259,6 +262,7 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 					resources4 = EconomyUtils.GetResources(output.m_Resource, resources);
 				}
 				value.m_Profitability = (byte)math.min(255f, (float)(num * EconomyUtils.kCompanyUpdatesPerDay) * num6 / 100f);
+				//BetterEconomy.log.Info($"profitability id:{entity.Index} total {value.m_Profitability}, production {num}, price {num6}, ppd {companyProductionPerDay}");
 				nativeArray5[i] = value;
 				TaxPayer value2 = nativeArray6[i];
 				int num10 = (flag ? TaxSystem.GetCommercialTaxRate(output.m_Resource, m_TaxRates) : TaxSystem.GetIndustrialTaxRate(output.m_Resource, m_TaxRates));

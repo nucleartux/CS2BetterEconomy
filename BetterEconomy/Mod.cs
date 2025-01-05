@@ -10,7 +10,7 @@ namespace BetterEconomy
     public class BetterEconomy : IMod
     {
 
-        public static readonly ILog log = LogManager.GetLogger($"{nameof(BetterEconomy)}.{nameof(BetterEconomy)}").SetShowsErrorsInUI(false);
+        public static readonly ILog log = LogManager.GetLogger($"{nameof(BetterEconomy)}").SetShowsErrorsInUI(false);
 
         public void OnLoad(UpdateSystem updateSystem)
         {
