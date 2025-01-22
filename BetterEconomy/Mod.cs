@@ -18,19 +18,12 @@ namespace BetterEconomy
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<CompanyMoveAwaySystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedCompanyMoveAwaySystem>(SystemUpdatePhase.GameSimulation);
-
             
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ProcessingCompanySystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedProcessingCompanySystem>(SystemUpdatePhase.GameSimulation);
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BuildingUpkeepSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedBuildingUpkeepSystem>(SystemUpdatePhase.GameSimulation);
-
-
-              
-            //    World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<CompanyInitializeSystem>().Enabled = false;
-            //   updateSystem.UpdateAt<ModifiedCompanyInitializeSystem>(SystemUpdatePhase.Modification5);
-
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PropertyRenterSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedPropertyRenterSystem>(SystemUpdatePhase.GameSimulation);
