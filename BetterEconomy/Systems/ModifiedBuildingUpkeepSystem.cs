@@ -536,6 +536,9 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 		public ComponentLookup<PrefabRef> m_Prefabs;
 
 		[ReadOnly]
+		public ComponentLookup<PrefabData> m_PrefabDatas;
+
+		[ReadOnly]
 		public ComponentLookup<SpawnableBuildingData> m_SpawnableBuildings;
 
 		[ReadOnly]
@@ -587,6 +590,10 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 					continue;
 				}
 				SpawnableBuildingData spawnableBuildingData = m_SpawnableBuildings[prefab];
+				if (!m_PrefabDatas.IsComponentEnabled(spawnableBuildingData.m_ZonePrefab))
+				{
+					continue;
+				}
 				BuildingData prefabBuildingData = m_Buildings[prefab];
 				BuildingPropertyData buildingPropertyData = m_BuildingPropertyDatas[prefab];
 				ZoneData zoneData = m_ZoneData[spawnableBuildingData.m_ZonePrefab];
@@ -784,6 +791,9 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 		public ComponentLookup<PrefabRef> __Game_Prefabs_PrefabRef_RO_ComponentLookup;
 
 		[ReadOnly]
+		public ComponentLookup<PrefabData> __Game_Prefabs_PrefabData_RO_ComponentLookup;
+
+		[ReadOnly]
 		public ComponentLookup<OfficeBuilding> __Game_Prefabs_OfficeBuilding_RO_ComponentLookup;
 
 		[ReadOnly]
@@ -843,6 +853,7 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 			__Game_Zones_Block_RO_ComponentLookup = state.GetComponentLookup<Block>(isReadOnly: true);
 			__Game_Zones_ValidArea_RO_ComponentLookup = state.GetComponentLookup<ValidArea>(isReadOnly: true);
 			__Game_Prefabs_PrefabRef_RO_ComponentLookup = state.GetComponentLookup<PrefabRef>(isReadOnly: true);
+			__Game_Prefabs_PrefabData_RO_ComponentLookup = state.GetComponentLookup<PrefabData>(isReadOnly: true);
 			__Game_Prefabs_OfficeBuilding_RO_ComponentLookup = state.GetComponentLookup<OfficeBuilding>(isReadOnly: true);
 			__Game_Zones_Cell_RO_BufferLookup = state.GetBufferLookup<Cell>(isReadOnly: true);
 			__Game_Buildings_Building_RW_ComponentLookup = state.GetComponentLookup<Building>();
@@ -1029,6 +1040,7 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 		__TypeHandle.__Game_Prefabs_BuildingPropertyData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 		__TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 		__TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
+		__TypeHandle.__Game_Prefabs_PrefabData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 		__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 		__TypeHandle.__Game_Zones_ValidArea_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 		__TypeHandle.__Game_Zones_Block_RO_ComponentLookup.Update(ref base.CheckedStateRef);
@@ -1050,6 +1062,7 @@ public partial class ModifiedBuildingUpkeepSystem : GameSystemBase
 		levelupJob.m_BlockData = __TypeHandle.__Game_Zones_Block_RO_ComponentLookup;
 		levelupJob.m_ValidAreaData = __TypeHandle.__Game_Zones_ValidArea_RO_ComponentLookup;
 		levelupJob.m_Prefabs = __TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup;
+		levelupJob.m_PrefabDatas = __TypeHandle.__Game_Prefabs_PrefabData_RO_ComponentLookup;
 		levelupJob.m_SpawnableBuildings = __TypeHandle.__Game_Prefabs_SpawnableBuildingData_RO_ComponentLookup;
 		levelupJob.m_Buildings = __TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup;
 		levelupJob.m_BuildingPropertyDatas = __TypeHandle.__Game_Prefabs_BuildingPropertyData_RO_ComponentLookup;
