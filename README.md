@@ -16,6 +16,7 @@ Fixes:
 - Fixed amount of service subtracted from leisure companies.
 - Fixed a bug where resource export companies were paid twice.
 - Fixed profitability fluctuations for processing companies.
+- Fixed electricity fee calculation.
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 

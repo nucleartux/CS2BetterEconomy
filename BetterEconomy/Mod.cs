@@ -33,6 +33,9 @@ namespace BetterEconomy
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ResourceExporterSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedResourceExporterSystem>(SystemUpdatePhase.GameSimulation);
+
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UtilityFeeSystem>().Enabled = false;
+            updateSystem.UpdateAt<ModifiedUtilityFeeSystem>(SystemUpdatePhase.GameSimulation);
          }
 
         public void OnDispose()
