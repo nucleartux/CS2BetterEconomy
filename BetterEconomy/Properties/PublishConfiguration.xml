@@ -25,6 +25,8 @@ Fixes:
 - Fixed a bug where resource export companies were paid twice.
 - Fixed profitability fluctuations for processing companies.
 - Fixed electricity fee calculation.
+- Fixed resource buyer's trade cost.
+- Fixed amount of resources consumed by processing companies.
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 
@@ -43,13 +45,14 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.6.0" />
+	<ModVersion Value="1.7.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-**v1.6.0**
-- Fixed electricity fee calculation
+**v1.7.0**
+- Fixed resource buyer's trade cost.
+- Fixed amount of resources consumed by processing companies.
 
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
