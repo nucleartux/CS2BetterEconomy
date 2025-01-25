@@ -45,14 +45,13 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.7.0" />
+	<ModVersion Value="1.8.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-**v1.7.0**
-- Fixed resource buyer's trade cost.
-- Fixed amount of resources consumed by processing companies.
+**v1.8.0**
+- Partially fix tax system
 
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->

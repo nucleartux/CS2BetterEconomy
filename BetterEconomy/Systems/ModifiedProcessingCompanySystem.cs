@@ -276,9 +276,11 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 					if (num11 > 0)
 					{
 						value2.m_AverageTaxRate = Mathf.RoundToInt(math.lerp(value2.m_AverageTaxRate, num10, (float)num11 / (float)(num11 + value2.m_UntaxedIncome)));
+						//BetterEconomy.log.Info($"current tax rate  ${num11}, out {num}, inp1 {num4}, inp2 {num5}");
+						// bug 11
+						value2.m_UntaxedIncome += num11;
+						nativeArray6[i] = value2;
 					}
-					value2.m_UntaxedIncome += num11;
-					nativeArray6[i] = value2;
 				}
 				if (!flag && EconomyUtils.IsMaterial(output.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) && resources4 > 0)
 				{
