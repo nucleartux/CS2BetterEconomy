@@ -220,14 +220,16 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 					if (input.m_Resource != Resource.NoResource)
 					{
 						// bug 10
-						num4 = -num;
+						// num4 = -num;
+						num4 = -MathUtils.RoundToIntRandom(ref reference.m_RandomSeed, (float)num * num2);
 						int num8 = EconomyUtils.AddResources(input.m_Resource, num4, resources);
 						num7 += ((EconomyUtils.GetWeight(input.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) > 0f) ? num8 : 0);
 					}
 					if (input2.m_Resource != Resource.NoResource)
 					{
 						// bug 10
-						num5 = -num;
+						// num5 = -num;
+						num5 = -MathUtils.RoundToIntRandom(ref reference.m_RandomSeed, (float)num * num3);
 						int num9 = EconomyUtils.AddResources(input2.m_Resource, num5, resources);
 						num7 += ((EconomyUtils.GetWeight(input2.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) > 0f) ? num9 : 0);
 					}
@@ -241,6 +243,7 @@ public partial class ModifiedProcessingCompanySystem : GameSystemBase
 						resources4 = EconomyUtils.GetResources(output.m_Resource, resources);
 						num = math.clamp(IndustrialAISystem.kMaxVirtualResourceStorage - resources4, 0, num);
 					}
+					//BetterEconomy.log.Info($"current tax rate  out {num}, inp1 {num4}, inp2 {num5}");
 					resources4 = EconomyUtils.AddResources(output.m_Resource, num, resources);
 					AddProducedResource(output.m_Resource, num);
 					if (!flag && reference.m_RandomSeed.NextInt(400000) < num)

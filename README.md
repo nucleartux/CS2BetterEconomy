@@ -18,7 +18,6 @@ Fixes:
 - Fixed profitability fluctuations for processing companies.
 - Fixed electricity fee calculation.
 - Fixed resource buyer's trade cost.
-- Fixed amount of resources consumed by processing companies.
 
 This mod alters the behavior of many systems, so any other mods that affect the economy, even slightly, are incompatible with it.
 
