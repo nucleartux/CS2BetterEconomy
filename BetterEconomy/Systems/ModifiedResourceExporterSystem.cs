@@ -200,8 +200,10 @@ public partial class ModifiedResourceExporterSystem : GameSystemBase
 				if (item.m_Amount > 0 && resources > 0)
 				{
 					item.m_Amount = math.min(item.m_Amount, resources);
-					int num = Mathf.RoundToInt(EconomyUtils.GetMarketPrice(item.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) * (float)item.m_Amount);
+					int numMar = Mathf.RoundToInt(EconomyUtils.GetMarketPrice(item.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) * (float)item.m_Amount);
+					int numInd = Mathf.RoundToInt(EconomyUtils.GetIndustrialPrice(item.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas) * (float)item.m_Amount);
 					float weight = EconomyUtils.GetWeight(item.m_Resource, m_ResourcePrefabs, ref m_ResourceDatas);
+					int numDel = 0;
 					if (weight != 0f && m_Storages.HasComponent(item.m_Buyer))
 					{
 						DynamicBuffer<TradeCost> costs = m_TradeCosts[item.m_Buyer];
@@ -214,11 +216,12 @@ public partial class ModifiedResourceExporterSystem : GameSystemBase
 						DynamicBuffer<TradeCost> costs2 = m_TradeCosts[item.m_Seller];
 						tradeCost.m_SellCost = math.lerp(tradeCost.m_SellCost, num2, 0.5f);
 						EconomyUtils.SetTradeCost(item.m_Resource, tradeCost, costs2, keepLastTime: true);
-						num -= Mathf.RoundToInt(num2);
+						numDel = Mathf.RoundToInt(num2 * item.m_Amount);
 					}
+					//BetterEconomy.log.Info($"export ${numMar}, del {numDel}, {item.m_Amount} sellerid: {item.m_Seller.Index}, numind {numInd} has {(m_Storages.HasComponent(item.m_Buyer)?"yes":"no")} ");
 					EconomyUtils.AddResources(item.m_Resource, -item.m_Amount, m_Resources[item.m_Seller]);
 					// bug 6
-					// EconomyUtils.AddResources(Resource.Money, num, m_Resources[item.m_Seller]);
+					EconomyUtils.AddResources(Resource.Money, numInd - numMar - numDel, m_Resources[item.m_Seller]);
 				}
 			}
 		}
