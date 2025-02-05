@@ -39,6 +39,9 @@ namespace BetterEconomy
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ResourceBuyerSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedResourceBuyerSystem>(SystemUpdatePhase.GameSimulation);
+
+            PrefabPatcher prefabPatcher = new PrefabPatcher();
+            prefabPatcher.PatchEconomyParameters();
          }
 
         public void OnDispose()

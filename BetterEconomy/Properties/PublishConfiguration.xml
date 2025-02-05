@@ -40,17 +40,17 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/Thumbnail.png" />
 	<!--Tag, can be set multiple times-->
-	<Tag Value="" />
+	<Tag Value="Simulation" />
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.9.0" />
+	<ModVersion Value="1.10.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-**v1.9.0**
-- Fixed resource export cost again
+**v1.10.0**
+- Increase industrial efficiency
 
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
