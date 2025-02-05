@@ -40,7 +40,7 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/Thumbnail.png" />
 	<!--Tag, can be set multiple times-->
-	<Tag Value="Simulation" />
+	<Tag Value="" />
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
