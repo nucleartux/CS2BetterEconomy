@@ -4,6 +4,10 @@ using Game.Modding;
 using Unity.Entities;
 using Game.Simulation;
 using BetterEconomy.Systems;
+using System.Reflection;
+using System;
+using System.Linq;
+using Game.SceneFlow;
 
 namespace BetterEconomy
 {
@@ -16,20 +20,36 @@ namespace BetterEconomy
         {
             log.Info(nameof(OnLoad));
 
+            bool plopGrowablesFound = GameManager.instance.modManager.Any(mod => {
+                return mod.asset.name.Equals("PlopTheGrowables");
+            });
+
+            bool realisticTripsFound = GameManager.instance.modManager.Any(mod => {
+                return mod.asset.name.Equals("Time2Work");
+            });
+
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<CompanyMoveAwaySystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedCompanyMoveAwaySystem>(SystemUpdatePhase.GameSimulation);
             
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ProcessingCompanySystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedProcessingCompanySystem>(SystemUpdatePhase.GameSimulation);
 
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BuildingUpkeepSystem>().Enabled = false;
-            updateSystem.UpdateAt<ModifiedBuildingUpkeepSystem>(SystemUpdatePhase.GameSimulation);
+            if (plopGrowablesFound) {
+                log.Warn("PlopTheGrowables found");
+            } else {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BuildingUpkeepSystem>().Enabled = false;
+                updateSystem.UpdateAt<ModifiedBuildingUpkeepSystem>(SystemUpdatePhase.GameSimulation);
+            }
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PropertyRenterSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedPropertyRenterSystem>(SystemUpdatePhase.GameSimulation);
 
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<LeisureSystem>().Enabled = false;
-            updateSystem.UpdateAt<ModifiedLeisureSystem>(SystemUpdatePhase.GameSimulation);
+            if (realisticTripsFound) {
+                log.Warn("Time2Work found");
+            } else {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<LeisureSystem>().Enabled = false;
+                updateSystem.UpdateAt<ModifiedLeisureSystem>(SystemUpdatePhase.GameSimulation);
+            }
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ResourceExporterSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedResourceExporterSystem>(SystemUpdatePhase.GameSimulation);
