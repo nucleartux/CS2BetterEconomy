@@ -17,13 +17,8 @@ Ultimately, it’s not just a mod but a patch with many changes that should have
 
 Fixes:
 - Fixed a bug where companies would randomly leave the city.
-- Fixed the deterioration of the buildings' condition. (This fix is disabled if the Plop the Growables mod is installed)
-- Fixed building upkeep charges so they subtract money from the renter instead of adding it. (This fix is disabled if the Plop the Growables mod is installed)
-- Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.
-- Fixed amount of service subtracted from leisure companies. (This fix is disabled if the Realistic Trips mod is installed)
-- Fixed a bug where resource export companies were paid twice.
-- Fixed profitability fluctuations for processing companies.
+- Fixed amount of service subtracted from leisure companies.
 - Fixed electricity fee calculation.
 - Fixed resource buyer's trade cost.
 
@@ -41,13 +36,13 @@ The mod works with old cities, but there’s a high chance that your city is alr
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-economy.1724695/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.12.0" />
+	<ModVersion Value="1.13.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-**v1.12.0**
-- Partially fix compatibility with Plop the Growables and Realistic Trips mods
+**v1.13.0**
+- Fixed compatibility with version 1.2.5f
 
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->

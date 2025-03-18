@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using Game;
-using Game.Areas;
 using Game.Buildings;
 using Game.Citizens;
 using Game.City;
@@ -60,8 +59,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 	{
 		public NativeQueue<SalesEvent> m_SalesQueue;
 
-		public EconomyParameterData m_EconomyParameters;
-
 		public BufferLookup<Game.Economy.Resources> m_Resources;
 
 		public ComponentLookup<ServiceAvailable> m_Services;
@@ -111,15 +108,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 		public PersonalCarSelectData m_PersonalCarSelectData;
 
 		[ReadOnly]
-		public NativeArray<int> m_TaxRates;
-
-		[ReadOnly]
-		public ComponentLookup<CurrentDistrict> m_Districts;
-
-		[ReadOnly]
-		public BufferLookup<DistrictModifier> m_DistrictModifiers;
-
-		[ReadOnly]
 		public ComponentLookup<Population> m_PopulationData;
 
 		public Entity m_PopulationEntity;
@@ -163,7 +151,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 					{
 						tradeCost2.m_BuyCost = math.lerp(tradeCost2.m_BuyCost, num2 + tradeCost.m_BuyCost, 0.5f);
 						// bug 9
-						//BetterEconomy.log.Info($"fddddfd {item.m_Buyer.Index}, trade cost1 buy {tradeCost.m_BuyCost}, sell {tradeCost.m_SellCost}. trade cost2 buy {tradeCost2.m_BuyCost}, sell {tradeCost2.m_SellCost}");
 						EconomyUtils.SetTradeCost(item.m_Resource, tradeCost2, m_TradeCosts[item.m_Buyer], keepLastTime: true);
 					}
 				}
@@ -171,7 +158,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 				{
 					continue;
 				}
-				TaxSystem.GetIndustrialTaxRate(item.m_Resource, m_TaxRates);
 				if (flag && m_Services.HasComponent(item.m_Seller) && m_PropertyRenters.HasComponent(item.m_Seller))
 				{
 					Entity prefab = m_Prefabs[item.m_Seller].m_Prefab;
@@ -188,24 +174,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 						value.m_MeanPriority = math.min(1f, (float)value.m_ServiceAvailable / (float)serviceCompanyData.m_MaxService);
 					}
 					m_Services[item.m_Seller] = value;
-					Entity property = m_PropertyRenters[item.m_Seller].m_Property;
-					if (m_Districts.HasComponent(property))
-					{
-						Entity district = m_Districts[property].m_District;
-						TaxSystem.GetModifiedCommercialTaxRate(item.m_Resource, m_TaxRates, district, m_DistrictModifiers);
-					}
-					else
-					{
-						TaxSystem.GetCommercialTaxRate(item.m_Resource, m_TaxRates);
-					}
 				}
-				if (m_Resources.HasBuffer(item.m_Seller))
+				if (m_Resources.HasBuffer(item.m_Seller) && !m_Storages.HasComponent(item.m_Seller))
 				{
 					DynamicBuffer<Game.Economy.Resources> resources = m_Resources[item.m_Seller];
 					int resources2 = EconomyUtils.GetResources(item.m_Resource, resources);
 					EconomyUtils.AddResources(item.m_Resource, -math.min(resources2, Mathf.RoundToInt(item.m_Amount)), resources);
 				}
-				EconomyUtils.AddResources(Resource.Money, -Mathf.RoundToInt(num), m_Resources[item.m_Buyer]);
 				if (m_Households.HasComponent(item.m_Buyer))
 				{
 					Household value2 = m_Households[item.m_Buyer];
@@ -231,13 +206,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 				{
 					continue;
 				}
-				Entity property2 = m_PropertyRenters[item.m_Seller].m_Property;
-				if (!m_TransformDatas.HasComponent(property2) || !m_HouseholdCitizens.HasBuffer(item.m_Buyer))
+				Entity property = m_PropertyRenters[item.m_Seller].m_Property;
+				if (!m_TransformDatas.HasComponent(property) || !m_HouseholdCitizens.HasBuffer(item.m_Buyer))
 				{
 					continue;
 				}
 				Entity buyer = item.m_Buyer;
-				Game.Objects.Transform transform = m_TransformDatas[property2];
+				Game.Objects.Transform transform = m_TransformDatas[property];
 				int length = m_HouseholdCitizens[buyer].Length;
 				int num3 = (m_HouseholdAnimals.HasBuffer(buyer) ? m_HouseholdAnimals[buyer].Length : 0);
 				int passengerAmount;
@@ -256,7 +231,7 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 				{
 					num4 += 5;
 				}
-				Entity entity = m_PersonalCarSelectData.CreateVehicle(m_CommandBuffer, ref random, passengerAmount, num4, avoidTrailers: true, noSlowVehicles: false, transform, property2, Entity.Null, (PersonalCarFlags)0u, stopped: true);
+				Entity entity = m_PersonalCarSelectData.CreateVehicle(m_CommandBuffer, ref random, passengerAmount, num4, avoidTrailers: true, noSlowVehicles: false, transform, property, Entity.Null, (PersonalCarFlags)0u, stopped: true);
 				if (entity != Entity.Null)
 				{
 					m_CommandBuffer.AddComponent(entity, new Owner(buyer));
@@ -338,13 +313,22 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 		public ComponentLookup<Worker> m_Workers;
 
 		[ReadOnly]
-		public ComponentLookup<ServiceCompanyData> m_ServiceCompanyDatas;
+		public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTrucks;
+
+		[ReadOnly]
+		public ComponentLookup<Game.Companies.StorageCompany> m_StorageCompanies;
 
 		[ReadOnly]
 		public BufferLookup<Game.Economy.Resources> m_Resources;
 
 		[ReadOnly]
 		public BufferLookup<HouseholdCitizen> m_HouseholdCitizens;
+
+		[ReadOnly]
+		public BufferLookup<GuestVehicle> m_GuestVehicles;
+
+		[ReadOnly]
+		public BufferLookup<LayoutElement> m_LayoutElements;
 
 		[NativeDisableParallelForRestriction]
 		public ComponentLookup<CoordinatedMeeting> m_CoordinatedMeetings;
@@ -444,11 +428,18 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 					if (m_Properties.HasComponent(destination) || m_OutsideConnections.HasComponent(destination))
 					{
 						DynamicBuffer<Game.Economy.Resources> resources = m_Resources[destination];
-						int resources2 = EconomyUtils.GetResources(resourceBuyer.m_ResourceNeeded, resources);
-						if (flag || resourceBuyer.m_AmountNeeded < 2 * resources2)
+						int num = EconomyUtils.GetResources(resourceBuyer.m_ResourceNeeded, resources);
+						if (m_StorageCompanies.HasComponent(destination))
 						{
-							resourceBuyer.m_AmountNeeded = math.min(resourceBuyer.m_AmountNeeded, resources2);
-							SaleFlags saleFlags = (m_ServiceAvailables.HasComponent(destination) ? SaleFlags.CommercialSeller : SaleFlags.None);
+							int allBuyingResourcesTrucks = VehicleUtils.GetAllBuyingResourcesTrucks(destination, resourceBuyer.m_ResourceNeeded, m_DeliveryTrucks, m_GuestVehicles, m_LayoutElements);
+							num -= allBuyingResourcesTrucks;
+						}
+						if (flag || resourceBuyer.m_AmountNeeded < 2 * num)
+						{
+							resourceBuyer.m_AmountNeeded = math.min(resourceBuyer.m_AmountNeeded, num);
+							bool num2 = m_ServiceAvailables.HasComponent(destination);
+							bool flag2 = m_StorageCompanies.HasComponent(destination);
+							SaleFlags saleFlags = (num2 ? SaleFlags.CommercialSeller : SaleFlags.None);
 							if (flag)
 							{
 								saleFlags |= SaleFlags.Virtual;
@@ -469,12 +460,12 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 							m_CommandBuffer.RemoveComponent(unfilteredChunkIndex, entity, in m_PathfindTypes);
 							m_CommandBuffer.RemoveComponent<ResourceBuyer>(unfilteredChunkIndex, entity);
 							int population = m_Populations[m_City].m_Population;
-							bool flag2 = random.NextInt(100) < 100 - Mathf.RoundToInt(100f / math.max(1f, math.sqrt(m_EconomyParameterData.m_TrafficReduction * (float)population * 0.1f)));
-							if (!flag && !flag2)
+							bool flag3 = random.NextInt(100) < 100 - Mathf.RoundToInt(100f / math.max(1f, math.sqrt(m_EconomyParameterData.m_TrafficReduction * (float)population * 0.1f)));
+							if (!flag && !flag3)
 							{
 								TripNeeded elem = default(TripNeeded);
 								elem.m_TargetAgent = destination;
-								elem.m_Purpose = Purpose.Shopping;
+								elem.m_Purpose = ((!flag2) ? Purpose.Shopping : Purpose.CompanyShopping);
 								elem.m_Data = resourceBuyer.m_AmountNeeded;
 								elem.m_Resource = resourceBuyer.m_ResourceNeeded;
 								dynamicBuffer.Add(elem);
@@ -733,16 +724,25 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 		public ComponentLookup<CommuterHousehold> __Game_Citizens_CommuterHousehold_RO_ComponentLookup;
 
 		[ReadOnly]
-		public ComponentLookup<ServiceCompanyData> __Game_Companies_ServiceCompanyData_RO_ComponentLookup;
+		public ComponentLookup<Worker> __Game_Citizens_Worker_RO_ComponentLookup;
 
 		[ReadOnly]
-		public ComponentLookup<Worker> __Game_Citizens_Worker_RO_ComponentLookup;
+		public ComponentLookup<Game.Vehicles.DeliveryTruck> __Game_Vehicles_DeliveryTruck_RO_ComponentLookup;
+
+		[ReadOnly]
+		public ComponentLookup<Game.Companies.StorageCompany> __Game_Companies_StorageCompany_RO_ComponentLookup;
 
 		[ReadOnly]
 		public BufferLookup<Game.Economy.Resources> __Game_Economy_Resources_RO_BufferLookup;
 
 		[ReadOnly]
 		public BufferLookup<HouseholdCitizen> __Game_Citizens_HouseholdCitizen_RO_BufferLookup;
+
+		[ReadOnly]
+		public BufferLookup<GuestVehicle> __Game_Vehicles_GuestVehicle_RO_BufferLookup;
+
+		[ReadOnly]
+		public BufferLookup<LayoutElement> __Game_Vehicles_LayoutElement_RO_BufferLookup;
 
 		[ReadOnly]
 		public ComponentLookup<ResourceData> __Game_Prefabs_ResourceData_RO_ComponentLookup;
@@ -780,19 +780,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 		public BufferLookup<HouseholdAnimal> __Game_Citizens_HouseholdAnimal_RO_BufferLookup;
 
 		[ReadOnly]
-		public ComponentLookup<Game.Companies.StorageCompany> __Game_Companies_StorageCompany_RO_ComponentLookup;
+		public ComponentLookup<ServiceCompanyData> __Game_Companies_ServiceCompanyData_RO_ComponentLookup;
 
 		public ComponentLookup<Household> __Game_Citizens_Household_RW_ComponentLookup;
 
 		public ComponentLookup<BuyingCompany> __Game_Companies_BuyingCompany_RW_ComponentLookup;
 
 		public BufferLookup<TradeCost> __Game_Companies_TradeCost_RW_BufferLookup;
-
-		[ReadOnly]
-		public ComponentLookup<CurrentDistrict> __Game_Areas_CurrentDistrict_RO_ComponentLookup;
-
-		[ReadOnly]
-		public BufferLookup<DistrictModifier> __Game_Areas_DistrictModifier_RO_BufferLookup;
 
 		[ReadOnly]
 		public ComponentLookup<Population> __Game_City_Population_RO_ComponentLookup;
@@ -821,10 +815,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			__Game_Citizens_Household_RO_ComponentLookup = state.GetComponentLookup<Household>(isReadOnly: true);
 			__Game_Citizens_TouristHousehold_RO_ComponentLookup = state.GetComponentLookup<TouristHousehold>(isReadOnly: true);
 			__Game_Citizens_CommuterHousehold_RO_ComponentLookup = state.GetComponentLookup<CommuterHousehold>(isReadOnly: true);
-			__Game_Companies_ServiceCompanyData_RO_ComponentLookup = state.GetComponentLookup<ServiceCompanyData>(isReadOnly: true);
 			__Game_Citizens_Worker_RO_ComponentLookup = state.GetComponentLookup<Worker>(isReadOnly: true);
+			__Game_Vehicles_DeliveryTruck_RO_ComponentLookup = state.GetComponentLookup<Game.Vehicles.DeliveryTruck>(isReadOnly: true);
+			__Game_Companies_StorageCompany_RO_ComponentLookup = state.GetComponentLookup<Game.Companies.StorageCompany>(isReadOnly: true);
 			__Game_Economy_Resources_RO_BufferLookup = state.GetBufferLookup<Game.Economy.Resources>(isReadOnly: true);
 			__Game_Citizens_HouseholdCitizen_RO_BufferLookup = state.GetBufferLookup<HouseholdCitizen>(isReadOnly: true);
+			__Game_Vehicles_GuestVehicle_RO_BufferLookup = state.GetBufferLookup<GuestVehicle>(isReadOnly: true);
+			__Game_Vehicles_LayoutElement_RO_BufferLookup = state.GetBufferLookup<LayoutElement>(isReadOnly: true);
 			__Game_Prefabs_ResourceData_RO_ComponentLookup = state.GetComponentLookup<ResourceData>(isReadOnly: true);
 			__Game_Prefabs_PrefabRef_RO_ComponentLookup = state.GetComponentLookup<PrefabRef>(isReadOnly: true);
 			__Game_Prefabs_CarData_RO_ComponentLookup = state.GetComponentLookup<CarData>(isReadOnly: true);
@@ -838,12 +835,10 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			__Game_Objects_Transform_RO_ComponentLookup = state.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true);
 			__Game_Vehicles_OwnedVehicle_RO_BufferLookup = state.GetBufferLookup<OwnedVehicle>(isReadOnly: true);
 			__Game_Citizens_HouseholdAnimal_RO_BufferLookup = state.GetBufferLookup<HouseholdAnimal>(isReadOnly: true);
-			__Game_Companies_StorageCompany_RO_ComponentLookup = state.GetComponentLookup<Game.Companies.StorageCompany>(isReadOnly: true);
+			__Game_Companies_ServiceCompanyData_RO_ComponentLookup = state.GetComponentLookup<ServiceCompanyData>(isReadOnly: true);
 			__Game_Citizens_Household_RW_ComponentLookup = state.GetComponentLookup<Household>();
 			__Game_Companies_BuyingCompany_RW_ComponentLookup = state.GetComponentLookup<BuyingCompany>();
 			__Game_Companies_TradeCost_RW_BufferLookup = state.GetBufferLookup<TradeCost>();
-			__Game_Areas_CurrentDistrict_RO_ComponentLookup = state.GetComponentLookup<CurrentDistrict>(isReadOnly: true);
-			__Game_Areas_DistrictModifier_RO_BufferLookup = state.GetBufferLookup<DistrictModifier>(isReadOnly: true);
 			__Game_City_Population_RO_ComponentLookup = state.GetComponentLookup<Population>(isReadOnly: true);
 		}
 	}
@@ -959,10 +954,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			__TypeHandle.__Game_Prefabs_CarData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Prefabs_ResourceData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
+			__TypeHandle.__Game_Vehicles_LayoutElement_RO_BufferLookup.Update(ref base.CheckedStateRef);
+			__TypeHandle.__Game_Vehicles_GuestVehicle_RO_BufferLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Citizens_HouseholdCitizen_RO_BufferLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Economy_Resources_RO_BufferLookup.Update(ref base.CheckedStateRef);
+			__TypeHandle.__Game_Companies_StorageCompany_RO_ComponentLookup.Update(ref base.CheckedStateRef);
+			__TypeHandle.__Game_Vehicles_DeliveryTruck_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Citizens_Worker_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-			__TypeHandle.__Game_Companies_ServiceCompanyData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Citizens_CommuterHousehold_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Citizens_TouristHousehold_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Citizens_Household_RO_ComponentLookup.Update(ref base.CheckedStateRef);
@@ -1006,10 +1004,13 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			handleBuyersJob.m_Households = __TypeHandle.__Game_Citizens_Household_RO_ComponentLookup;
 			handleBuyersJob.m_TouristHouseholds = __TypeHandle.__Game_Citizens_TouristHousehold_RO_ComponentLookup;
 			handleBuyersJob.m_CommuterHouseholds = __TypeHandle.__Game_Citizens_CommuterHousehold_RO_ComponentLookup;
-			handleBuyersJob.m_ServiceCompanyDatas = __TypeHandle.__Game_Companies_ServiceCompanyData_RO_ComponentLookup;
 			handleBuyersJob.m_Workers = __TypeHandle.__Game_Citizens_Worker_RO_ComponentLookup;
+			handleBuyersJob.m_DeliveryTrucks = __TypeHandle.__Game_Vehicles_DeliveryTruck_RO_ComponentLookup;
+			handleBuyersJob.m_StorageCompanies = __TypeHandle.__Game_Companies_StorageCompany_RO_ComponentLookup;
 			handleBuyersJob.m_Resources = __TypeHandle.__Game_Economy_Resources_RO_BufferLookup;
 			handleBuyersJob.m_HouseholdCitizens = __TypeHandle.__Game_Citizens_HouseholdCitizen_RO_BufferLookup;
+			handleBuyersJob.m_GuestVehicles = __TypeHandle.__Game_Vehicles_GuestVehicle_RO_BufferLookup;
+			handleBuyersJob.m_LayoutElements = __TypeHandle.__Game_Vehicles_LayoutElement_RO_BufferLookup;
 			handleBuyersJob.m_ResourcePrefabs = m_ResourceSystem.GetPrefabs();
 			handleBuyersJob.m_ResourceDatas = __TypeHandle.__Game_Prefabs_ResourceData_RO_ComponentLookup;
 			handleBuyersJob.m_PrefabRefData = __TypeHandle.__Game_Prefabs_PrefabRef_RO_ComponentLookup;
@@ -1034,8 +1035,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			m_EndFrameBarrier.AddJobHandleForProducer(base.Dependency);
 			m_PathfindSetupSystem.AddQueueWriter(base.Dependency);
 			__TypeHandle.__Game_City_Population_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-			__TypeHandle.__Game_Areas_DistrictModifier_RO_BufferLookup.Update(ref base.CheckedStateRef);
-			__TypeHandle.__Game_Areas_CurrentDistrict_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Objects_OutsideConnection_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Companies_TradeCost_RW_BufferLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Prefabs_ResourceData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
@@ -1052,7 +1051,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			__TypeHandle.__Game_Companies_ServiceAvailable_RW_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Economy_Resources_RW_BufferLookup.Update(ref base.CheckedStateRef);
 			BuyJob buyJob = default(BuyJob);
-			buyJob.m_EconomyParameters = m_EconomyParameterQuery.GetSingleton<EconomyParameterData>();
 			buyJob.m_Resources = __TypeHandle.__Game_Economy_Resources_RW_BufferLookup;
 			buyJob.m_SalesQueue = m_SalesQueue;
 			buyJob.m_Services = __TypeHandle.__Game_Companies_ServiceAvailable_RW_ComponentLookup;
@@ -1072,9 +1070,6 @@ public partial class ModifiedResourceBuyerSystem : GameSystemBase
 			buyJob.m_ResourcePrefabs = m_ResourceSystem.GetPrefabs();
 			buyJob.m_RandomSeed = RandomSeed.Next();
 			buyJob.m_PersonalCarSelectData = m_PersonalCarSelectData;
-			buyJob.m_TaxRates = m_TaxSystem.GetTaxRates();
-			buyJob.m_Districts = __TypeHandle.__Game_Areas_CurrentDistrict_RO_ComponentLookup;
-			buyJob.m_DistrictModifiers = __TypeHandle.__Game_Areas_DistrictModifier_RO_BufferLookup;
 			buyJob.m_PopulationData = __TypeHandle.__Game_City_Population_RO_ComponentLookup;
 			buyJob.m_PopulationEntity = m_PopulationQuery.GetSingletonEntity();
 			buyJob.m_CommandBuffer = m_EndFrameBarrier.CreateCommandBuffer();

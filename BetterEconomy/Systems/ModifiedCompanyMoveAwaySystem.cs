@@ -1,5 +1,5 @@
-using Game;
 using System.Runtime.CompilerServices;
+using Game;
 using Game.Agents;
 using Game.Buildings;
 using Game.Common;
@@ -7,6 +7,7 @@ using Game.Companies;
 using Game.Economy;
 using Game.Notifications;
 using Game.Prefabs;
+using Game.Simulation;
 using Game.Tools;
 using Game.Vehicles;
 using Unity.Burst;
@@ -14,15 +15,14 @@ using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine.Scripting;
-using Game.Simulation;
 
-namespace BetterEconomy.Systems
-{
+namespace BetterEconomy.Systems;
 
-    public partial class ModifiedCompanyMoveAwaySystem : GameSystemBase
+
+public partial class ModifiedCompanyMoveAwaySystem : GameSystemBase
 {
-    
 	[BurstCompile]
 	private struct CheckMoveAwayJob : IJobChunk
 	{
@@ -39,7 +39,7 @@ namespace BetterEconomy.Systems
 		public ComponentTypeHandle<PropertyRenter> m_PropertyRenterType;
 
 		[ReadOnly]
-		public BufferTypeHandle<Game.Economy.Resources> m_ResourceType;
+		public BufferTypeHandle<Resources> m_ResourceType;
 
 		[ReadOnly]
 		public BufferLookup<OwnedVehicle> m_OwnedVehicles;
@@ -83,22 +83,20 @@ namespace BetterEconomy.Systems
 
 		public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
-        
-
 		public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
 		{
 			if (chunk.GetSharedComponent(m_UpdateFrameType).m_Index != m_UpdateFrameIndex)
 			{
 				return;
 			}
-			Unity.Mathematics.Random random = m_RandomSeed.GetRandom(unfilteredChunkIndex);
+			Random random = m_RandomSeed.GetRandom(unfilteredChunkIndex);
 			NativeArray<Entity> nativeArray = chunk.GetNativeArray(m_EntityType);
 			NativeArray<PrefabRef> nativeArray2 = chunk.GetNativeArray(ref m_PrefabType);
 			NativeArray<PropertyRenter> nativeArray3 = chunk.GetNativeArray(ref m_PropertyRenterType);
-			BufferAccessor<Game.Economy.Resources> bufferAccessor = chunk.GetBufferAccessor(ref m_ResourceType);
+			BufferAccessor<Resources> bufferAccessor = chunk.GetBufferAccessor(ref m_ResourceType);
 			for (int i = 0; i < chunk.Count; i++)
 			{
-				DynamicBuffer<Game.Economy.Resources> resources = bufferAccessor[i];
+				DynamicBuffer<Resources> resources = bufferAccessor[i];
 				Entity entity = nativeArray[i];
 				Entity prefab = nativeArray2[i].m_Prefab;
 				Entity property = nativeArray3[i].m_Property;
@@ -115,9 +113,6 @@ namespace BetterEconomy.Systems
 						companyTotalWorth = EconomyUtils.GetCompanyTotalWorth(resources, m_ResourcePrefabs, m_ResourceDatas);
 					}
 					int companyMoveAwayChance = CompanyUtils.GetCompanyMoveAwayChance(entity, prefab, property, ref m_ServiceAvailables, ref m_OfficeProperties, ref m_IndustrialProcessDatas, ref m_WorkProviders, m_TaxRates);
-					
-						// if(buildingPropertyData.CountProperties(AreaType.Commercial) > 0)
-				// BetterEconomy.log.Info($"fddddfd {entity.Index} cond {companyTotalWorth} bam {m_EconomyParameters.m_CompanyBankruptcyLimit} move chance {companyMoveAwayChance}");
 					// bug 0
 					if (companyTotalWorth < m_EconomyParameters.m_CompanyBankruptcyLimit && random.NextInt(100) < companyMoveAwayChance)
 					{
@@ -149,6 +144,9 @@ namespace BetterEconomy.Systems
 		public ComponentLookup<WorkProvider> m_WorkProviders;
 
 		[ReadOnly]
+		public ComponentLookup<Abandoned> m_Abandoneds;
+
+		[ReadOnly]
 		public EntityArchetype m_RentEventArchetype;
 
 		[ReadOnly]
@@ -168,7 +166,7 @@ namespace BetterEconomy.Systems
 				Entity property = nativeArray2[i].m_Property;
 				if (property != Entity.Null)
 				{
-					if (!m_OnMarkets.HasComponent(property))
+					if (!m_OnMarkets.HasComponent(property) && !m_Abandoneds.HasComponent(property))
 					{
 						m_CommandBuffer.AddComponent(unfilteredChunkIndex, property, default(PropertyToBeOnMarket));
 					}
@@ -206,7 +204,7 @@ namespace BetterEconomy.Systems
 		public ComponentTypeHandle<PrefabRef> __Game_Prefabs_PrefabRef_RO_ComponentTypeHandle;
 
 		[ReadOnly]
-		public BufferTypeHandle<Game.Economy.Resources> __Game_Economy_Resources_RO_BufferTypeHandle;
+		public BufferTypeHandle<Resources> __Game_Economy_Resources_RO_BufferTypeHandle;
 
 		public SharedComponentTypeHandle<UpdateFrame> __Game_Simulation_UpdateFrame_SharedComponentTypeHandle;
 
@@ -243,12 +241,15 @@ namespace BetterEconomy.Systems
 		[ReadOnly]
 		public ComponentLookup<PropertyOnMarket> __Game_Buildings_PropertyOnMarket_RO_ComponentLookup;
 
+		[ReadOnly]
+		public ComponentLookup<Abandoned> __Game_Buildings_Abandoned_RO_ComponentLookup;
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void __AssignHandles(ref SystemState state)
 		{
 			__Unity_Entities_Entity_TypeHandle = state.GetEntityTypeHandle();
 			__Game_Prefabs_PrefabRef_RO_ComponentTypeHandle = state.GetComponentTypeHandle<PrefabRef>(isReadOnly: true);
-			__Game_Economy_Resources_RO_BufferTypeHandle = state.GetBufferTypeHandle<Game.Economy.Resources>(isReadOnly: true);
+			__Game_Economy_Resources_RO_BufferTypeHandle = state.GetBufferTypeHandle<Resources>(isReadOnly: true);
 			__Game_Simulation_UpdateFrame_SharedComponentTypeHandle = state.GetSharedComponentTypeHandle<UpdateFrame>();
 			__Game_Buildings_PropertyRenter_RO_ComponentTypeHandle = state.GetComponentTypeHandle<PropertyRenter>(isReadOnly: true);
 			__Game_Vehicles_DeliveryTruck_RO_ComponentLookup = state.GetComponentLookup<Game.Vehicles.DeliveryTruck>(isReadOnly: true);
@@ -261,6 +262,7 @@ namespace BetterEconomy.Systems
 			__Game_Buildings_OfficeProperty_RO_ComponentLookup = state.GetComponentLookup<OfficeProperty>(isReadOnly: true);
 			__Game_Companies_WorkProvider_RO_ComponentLookup = state.GetComponentLookup<WorkProvider>(isReadOnly: true);
 			__Game_Buildings_PropertyOnMarket_RO_ComponentLookup = state.GetComponentLookup<PropertyOnMarket>(isReadOnly: true);
+			__Game_Buildings_Abandoned_RO_ComponentLookup = state.GetComponentLookup<Abandoned>(isReadOnly: true);
 		}
 	}
 
@@ -302,7 +304,7 @@ namespace BetterEconomy.Systems
 		m_ResourceSystem = base.World.GetOrCreateSystemManaged<ResourceSystem>();
 		m_TaxSystem = base.World.GetOrCreateSystemManaged<TaxSystem>();
 		m_IconCommandSystem = base.World.GetOrCreateSystemManaged<IconCommandSystem>();
-		m_CompanyQuery = GetEntityQuery(ComponentType.ReadOnly<Game.Companies.ProcessingCompany>(), ComponentType.ReadOnly<PropertyRenter>(), ComponentType.ReadOnly<WorkProvider>(), ComponentType.ReadOnly<Game.Economy.Resources>(), ComponentType.ReadOnly<PrefabRef>(), ComponentType.Exclude<Game.Companies.ExtractorCompany>(), ComponentType.Exclude<MovingAway>(), ComponentType.Exclude<Deleted>(), ComponentType.Exclude<Temp>());
+		m_CompanyQuery = GetEntityQuery(ComponentType.ReadOnly<Game.Companies.ProcessingCompany>(), ComponentType.ReadOnly<PropertyRenter>(), ComponentType.ReadOnly<WorkProvider>(), ComponentType.ReadOnly<Resources>(), ComponentType.ReadOnly<PrefabRef>(), ComponentType.Exclude<Game.Companies.ExtractorCompany>(), ComponentType.Exclude<MovingAway>(), ComponentType.Exclude<Deleted>(), ComponentType.Exclude<Temp>());
 		m_MovingAwayQuery = GetEntityQuery(ComponentType.ReadOnly<Game.Companies.ProcessingCompany>(), ComponentType.ReadOnly<MovingAway>(), ComponentType.ReadOnly<PropertyRenter>(), ComponentType.Exclude<Deleted>(), ComponentType.Exclude<Temp>());
 		m_EconomyParameterQuery = GetEntityQuery(ComponentType.ReadOnly<EconomyParameterData>());
 		m_RentEventArchetype = base.EntityManager.CreateArchetype(ComponentType.ReadWrite<Event>(), ComponentType.ReadWrite<RentersUpdated>());
@@ -360,6 +362,7 @@ namespace BetterEconomy.Systems
 		}
 		if (!m_MovingAwayQuery.IsEmptyIgnoreFilter)
 		{
+			__TypeHandle.__Game_Buildings_Abandoned_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Companies_WorkProvider_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Buildings_PropertyOnMarket_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 			__TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentTypeHandle.Update(ref base.CheckedStateRef);
@@ -369,6 +372,7 @@ namespace BetterEconomy.Systems
 			jobData2.m_RenterType = __TypeHandle.__Game_Buildings_PropertyRenter_RO_ComponentTypeHandle;
 			jobData2.m_OnMarkets = __TypeHandle.__Game_Buildings_PropertyOnMarket_RO_ComponentLookup;
 			jobData2.m_WorkProviders = __TypeHandle.__Game_Companies_WorkProvider_RO_ComponentLookup;
+			jobData2.m_Abandoneds = __TypeHandle.__Game_Buildings_Abandoned_RO_ComponentLookup;
 			jobData2.m_RentEventArchetype = m_RentEventArchetype;
 			jobData2.m_WorkProviderParameterData = __query_731167828_0.GetSingleton<WorkProviderParameterData>();
 			jobData2.m_IconCommandBuffer = m_IconCommandSystem.CreateCommandBuffer();
@@ -404,6 +408,4 @@ namespace BetterEconomy.Systems
 	public ModifiedCompanyMoveAwaySystem()
 	{
 	}
-}
-
 }

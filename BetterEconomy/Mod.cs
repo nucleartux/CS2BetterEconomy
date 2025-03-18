@@ -31,15 +31,12 @@ namespace BetterEconomy
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<CompanyMoveAwaySystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedCompanyMoveAwaySystem>(SystemUpdatePhase.GameSimulation);
             
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ProcessingCompanySystem>().Enabled = false;
-            updateSystem.UpdateAt<ModifiedProcessingCompanySystem>(SystemUpdatePhase.GameSimulation);
-
-            if (plopGrowablesFound) {
-                log.Warn("PlopTheGrowables found");
-            } else {
-                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BuildingUpkeepSystem>().Enabled = false;
-                updateSystem.UpdateAt<ModifiedBuildingUpkeepSystem>(SystemUpdatePhase.GameSimulation);
-            }
+            // if (plopGrowablesFound) {
+            //     log.Warn("PlopTheGrowables found");
+            // } else {
+            //     World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<BuildingUpkeepSystem>().Enabled = false;
+            //     updateSystem.UpdateAt<ModifiedBuildingUpkeepSystem>(SystemUpdatePhase.GameSimulation);
+            // }
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PropertyRenterSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedPropertyRenterSystem>(SystemUpdatePhase.GameSimulation);
@@ -50,9 +47,6 @@ namespace BetterEconomy
                 World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<LeisureSystem>().Enabled = false;
                 updateSystem.UpdateAt<ModifiedLeisureSystem>(SystemUpdatePhase.GameSimulation);
             }
-
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ResourceExporterSystem>().Enabled = false;
-            updateSystem.UpdateAt<ModifiedResourceExporterSystem>(SystemUpdatePhase.GameSimulation);
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<UtilityFeeSystem>().Enabled = false;
             updateSystem.UpdateAt<ModifiedUtilityFeeSystem>(SystemUpdatePhase.GameSimulation);

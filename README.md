@@ -9,13 +9,8 @@ Ultimately, it’s not just a mod but a patch with many changes that should have
 
 Fixes:
 - Fixed a bug where companies would randomly leave the city.
-- Fixed the deterioration of the buildings' condition.
-- Fixed building upkeep charges so they subtract money from the renter instead of adding it.
-- Fixed tax calculations for processing companies.
 - Fixed garbage fees, which were previously collected at 16x the intended amount.
 - Fixed amount of service subtracted from leisure companies.
-- Fixed a bug where resource export companies were paid twice.
-- Fixed profitability fluctuations for processing companies.
 - Fixed electricity fee calculation.
 - Fixed resource buyer's trade cost.
 

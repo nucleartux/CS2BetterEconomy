@@ -81,7 +81,7 @@ public partial class ModifiedUtilityFeeSystem : GameSystemBase
 				float value = math.csum(float3 * @float) / (float)dynamicBuffer.Length;
 				foreach (Renter item in dynamicBuffer)
 				{
-					if (m_Resources.TryGetBuffer(item, out var bufferData))
+					if (m_Resources.TryGetBuffer(item.m_Renter, out var bufferData))
 					{
 						int num = MathUtils.RoundToIntRandom(ref random, value);
 						EconomyUtils.AddResources(Resource.Money, -num, bufferData);
